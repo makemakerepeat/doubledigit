@@ -1,7 +1,17 @@
 import steppermotor as stepper
-from stepperconfig import *
-from clocktime import time_init, get_time_number, print_time
 import time
+
+from clocktime import time_init, get_time_number, print_time
+from config import CLOCK_MODE
+from constants import *
+from pinconfig import *
+
+STEPPER_1_DIGITS = CLOCK_012345_DIGITS
+if CLOCK_MODE == CLOCK_SHOW_HOURS:
+    STEPPER_1_DIGITS = CLOCK_012_DIGITS
+STEPPER_2_DIGITS = CLOCK_0123456789_DIGITS
+
+STEP_DELAY = 0.003
 
 m1 = stepper.StepperMotor("0-2",STEPPER_1_PINS, STEPPER_1_STOP_PIN, STEPPER_1_DIGITS)
 m2 = stepper.StepperMotor("0-9",STEPPER_2_PINS, STEPPER_2_STOP_PIN, STEPPER_2_DIGITS)
@@ -46,7 +56,7 @@ print("IN POSITION")
 num = 0
 while True:
     time.sleep(STEP_DELAY)
-    newnum = get_time_number(MODE)    
+    newnum = get_time_number(CLOCK_MODE)    
 
     if newnum != num:
         num = newnum

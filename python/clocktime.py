@@ -1,9 +1,11 @@
 import ntptime
 import network
-from netconfig import *
 import time
 
-SECONDS_PER_HOUR = 60*60
+from config import TIMEZONE_OFFSET_HOURS, NET_PWD, NET_SSID
+from constants import SECONDS_PER_HOUR
+
+SECONDS_OFFSET = int(TIMEZONE_OFFSET_HOURS * SECONDS_PER_HOUR)
 
 def do_connect():
     sta_if = network.WLAN(network.STA_IF)
@@ -21,8 +23,7 @@ def time_init():
 
 def get_local_time():
     seconds = time.time()
-    seconds_offset = int(TIME_OFFSET * SECONDS_PER_HOUR)
-    return time.gmtime(seconds + seconds_offset)
+    return time.gmtime(seconds + SECONDS_OFFSET)
 
 def get_time_number(num):
     tm = get_local_time()
