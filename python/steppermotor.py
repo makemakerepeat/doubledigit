@@ -47,9 +47,11 @@ class StepperMotor:
     def set_target_digit(self, tgt):
 
         current_digit_index = int(self.current_step // self.steps_per_digit)
-        next_index = current_digit_index
+        next_index = current_digit_index +1
 
         while next_index < self.num_digit_steps:
+            if self.name == "0-2":
+                print("AA", tgt, self.digit_steps[next_index], next_index)
             if self.digit_steps[next_index] == tgt:
                 break
             next_index += 1
@@ -58,8 +60,8 @@ class StepperMotor:
             self.target_step = 0
         else:
             self.target_step = int(next_index * self.steps_per_digit)
-
-        print("NEW TARGET", self.name, current_digit_index, next_index, self.current_step, self.target_step)
+        if self.name == "0-2":
+            print("NEW TARGET", self.name, current_digit_index, next_index, self.current_step, self.target_step)
 
     def step_to_target(self):
         if self.target_step == 0:
