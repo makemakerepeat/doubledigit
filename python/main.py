@@ -1,7 +1,7 @@
 import steppermotor as stepper
 import time
 
-from clocktime import time_init, get_time_number, print_time
+from clocktime import time_init, get_time_number, print_time, get_time_number_test
 from config import CLOCK_MODE
 from constants import *
 from pinconfig import *
@@ -56,7 +56,8 @@ print("IN POSITION")
 num = 0
 while True:
     time.sleep(STEP_DELAY)
-    newnum = get_time_number(CLOCK_MODE)    
+    newnum = get_time_number_test(CLOCK_MODE)    
+#    newnum = get_time_number(CLOCK_MODE)    
 
     if newnum != num:
         num = newnum
