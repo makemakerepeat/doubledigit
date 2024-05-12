@@ -6,6 +6,7 @@ from config import CLOCK_MODE
 from constants import *
 from pinconfig import *
 
+
 STEPPER_1_DIGITS = CLOCK_012345_DIGITS
 if CLOCK_MODE == CLOCK_SHOW_HOURS:
     STEPPER_1_DIGITS = CLOCK_012_DIGITS
@@ -22,33 +23,8 @@ time_init()
 print("TIME SET")
 
 def reset_pos_1by1():
-    in_pos = False
-    print("STARTING POS 1")
-    while not in_pos:    
-        in_pos = m1.step_if_zero()
-        time.sleep(STEP_DELAY)
-
-    in_pos = False
-    print("STARTING POS 2")
-    while not in_pos:    
-        in_pos = m2.step_if_zero()
-        time.sleep(STEP_DELAY)
-
-    in_pos = False
-    print("STARTING POS 3")
-    while not in_pos:    
-        in_pos = m1.step_if_non_zero()
-        time.sleep(STEP_DELAY)
-
-    in_pos = False
-    print("STARTING POS 4")
-    while not in_pos:    
-        in_pos = m2.step_if_non_zero()
-        time.sleep(STEP_DELAY)
-
-    m1.set_zero()
-    m2.set_zero()
-
+    m1.reset(STEP_DELAY)
+    m2.reset(STEP_DELAY)
 
 reset_pos_1by1()
 print("IN POSITION")
@@ -56,18 +32,17 @@ print("IN POSITION")
 num = 0
 while True:
     time.sleep(STEP_DELAY)
-    newnum = get_time_number_test(CLOCK_MODE)    
-#    newnum = get_time_number(CLOCK_MODE)    
+    newnum = get_time_number_test(CLOCK_MODE)
 
     if newnum != num:
         num = newnum
-        p1 = num % 10
-        p2 = num // 10
-        print(p1, p2, time.time())
+        p2 = num % 10
+        p1 = num // 10
+        print(num, p1, p2, time.time())
         print_time()
 
-        m1.set_target_digit(p2)
-        m2.set_target_digit(p1)
+        m1.set_target_digit(p1)
+        m2.set_target_digit(p2)
 
 
     m1.step_to_target()    
