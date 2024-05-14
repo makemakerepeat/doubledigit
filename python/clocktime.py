@@ -7,12 +7,12 @@ from constants import *
 
 SECONDS_OFFSET = int(TIMEZONE_OFFSET_HOURS * SECONDS_PER_HOUR)
 
-TEST_MODE_OFFSET = 0
+HOUR_MODE_OFFSET = 0
 TEST_MODE_FACTOR = 60
 if CLOCK_MODE == CLOCK_SHOW_HOURS:
     if CLOCK_12_HOUR:
         TEST_MODE_FACTOR = 12
-        TEST_MODE_OFFSET = 1
+        HOUR_MODE_OFFSET = 1
     else:
         TEST_MODE_FACTOR = 24
 
@@ -34,16 +34,16 @@ def get_local_time():
     seconds = time.time()
     return time.gmtime(seconds + SECONDS_OFFSET)
 
-def get_time_number_test(mode, slowdown = 5):
+def get_time_number_test(mode, slowdown = 2):
     seconds = int(time.time() // slowdown)
-    return seconds % TEST_MODE_FACTOR + TEST_MODE_OFFSET
+    return seconds % TEST_MODE_FACTOR + HOUR_MODE_OFFSET
 
 def get_time_number(mode):
     tm = get_local_time()
     result = tm[mode]
 
     if CLOCK_MODE == CLOCK_SHOW_HOURS and CLOCK_12_HOUR:
-        result = result % 12
+        result = result % 12 + HOUR_MODE_OFFSET
 
     return result
 

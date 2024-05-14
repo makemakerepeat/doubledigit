@@ -13,10 +13,11 @@ class StepperMotor:
         self.current_step = MIDPOINT_POSITION
         self.digit_steps = digit_steps
         self.num_digit_steps = len(digit_steps)
-        self.target_step = 0
+        self.steps_to_move = 0
         self.steps_per_rotation = steps_per_rotation
         self.steps_per_digit = steps_per_rotation / self.num_digit_steps
         self.gap_stepes = 40
+        self.slack_steps = 40
         
         self.current_digit = None
         self.current_digit_index = None
@@ -24,10 +25,10 @@ class StepperMotor:
         self.current_stop_value = False
         self.is_initialized = False
 
-    def step_until_condition(self, stop_value, step_delay):
+    def step_until_condition(self, stop_value, step_delay, reverse=False):
         num_steps = 0
         while self.stop_pin.value() != stop_value:
-            self.step_one()
+            self.step_one(reverse)
             num_steps += 1
             time.sleep(step_delay)
 
@@ -40,17 +41,19 @@ class StepperMotor:
             time.sleep(step_delay)
 
     def reset(self, step_delay):
-        print(self.name, "POS 1")
-        self.step_until_condition(True, step_delay)
-        print(self.name, "POS 2")
-        self.step_until_condition(False, step_delay)
-
+        self.step_until_condition(True, step_delay, False)
+        self.step_until_condition(False, step_delay, False)
         print("EDGE FOUND")
-        print(self.name, "POS 3")
-        gap_counter = self.step_until_condition(True, step_delay)
-
+        gap_counter = self.step_until_condition(True, step_delay, False)
         print("GAP COUNT", gap_counter)
-        print(self.name, "POS 4")
+
+        return_steps1 = self.step_until_condition(False, step_delay, True)
+        return_steps2 = self.step_until_condition(True, step_delay, True)
+
+        return_steps = return_steps1 + return_steps2
+        slack_steps = return_steps - gap_counter
+        print("Return", return_steps1, return_steps2, return_steps, slack_steps)
+
         step_counter = self.step_until_condition(False, step_delay)
         print("DISC COUNT", step_counter)
         print("TOTAL", gap_counter, "+", step_counter, "=", gap_counter + step_counter)
@@ -60,9 +63,9 @@ class StepperMotor:
         self.gap_stepes = gap_counter
         self.current_stop_value = bool(self.stop_pin.value()) 
 
-        for _ in range(self.gap_stepes // 2):
-            self.step_one()
-            time.sleep(step_delay)
+        # for _ in range(self.gap_stepes // 2):
+        #     self.step_one()
+        #     time.sleep(step_delay)
         self.set_zero()
 
     def step_one(self, reverse = False):
@@ -78,37 +81,35 @@ class StepperMotor:
 
         if self.is_initialized:
             new_stop_value = bool(self.stop_pin.value()) 
+
+            if self.current_step % 5 == 0:
+                print("S", self.current_step, new_stop_value)
+
             if new_stop_value != self.current_stop_value:
-                old_csv = self.current_step
-                if new_stop_value:
+                while self.current_step >=  MIDPOINT_POSITION + 100:
+                    self.current_step -= self.steps_per_rotation
+                while self.current_step <= MIDPOINT_POSITION - 100:
+                    self.current_step += self.steps_per_rotation                    
+                if not new_stop_value:
                     if reverse:
-                        new_current_step = MIDPOINT_POSITION - self.gap_stepes // 2
+                        new_current_step = MIDPOINT_POSITION + self.gap_stepes
                     else:
-                        new_current_step = MIDPOINT_POSITION + self.gap_stepes // 2
+                        new_current_step = MIDPOINT_POSITION 
                 else:
                     if reverse:
-                        new_current_step = MIDPOINT_POSITION + self.gap_stepes // 2
+                        new_current_step = MIDPOINT_POSITION 
                     else:
-                        new_current_step = MIDPOINT_POSITION - self.gap_stepes // 2
-                print("CORRECTION", self.name, old_csv, new_current_step)
+                        new_current_step = MIDPOINT_POSITION + self.gap_stepes
+                print("CORRECTION", new_stop_value, reverse, self.name, self.current_step, new_current_step)
                 self.current_stop_value = new_stop_value
+#                self.current_step = new_current_step
 
     def set_zero(self):
         self.current_step = MIDPOINT_POSITION
-        self.target_step = MIDPOINT_POSITION
+        self.steps_to_move = 0
         self.current_digit_index = 0
         self.current_digit = 0
         self.is_initialized = True
-
-    # def index_from_current_step(self):
-    #     current_digit_index = int((self.current_step + 1 - MIDPOINT_POSITION) // self.steps_per_digit)
-    #     while current_digit_index < 0:
-    #         current_digit_index += self.num_digit_steps
-
-    #     while current_digit_index >= self.num_digit_steps:
-    #         current_digit_index -= self.num_digit_steps
-
-    #     return current_digit_index
 
     def find_target_index(self, target, start_index, direction):
 
@@ -134,7 +135,7 @@ class StepperMotor:
 
     def set_target_digit(self, tgt):
 
-        if self.target_step != self.current_step:
+        if self.steps_to_move != 0:
             print("DENIED", tgt)
             return
 
@@ -147,9 +148,9 @@ class StepperMotor:
         pos = int(fwd_dist * self.steps_per_digit)
 
         if neg < pos:
-            self.target_step = self.current_step - neg
+            self.steps_to_move = -neg
         else:
-            self.target_step = self.current_step + pos
+            self.steps_to_move = pos
 
         self.current_digit_index = next_index
         self.current_digit = tgt
@@ -160,10 +161,12 @@ class StepperMotor:
         # print("NEW TARGET", tgt, current_digit_index, next_index, self.target_step)
 
     def step_to_target(self):
-        if self.current_step < self.target_step:
+        if self.steps_to_move > 0:
             self.step_one(False)
-        elif self.current_step > self.target_step:
+            self.steps_to_move -= 1
+        elif self.steps_to_move < 0:
             self.step_one(True)
+            self.steps_to_move += 1
         else:
             return True
 
