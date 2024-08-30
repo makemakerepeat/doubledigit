@@ -15,6 +15,11 @@ class StepControl:
         self.ignore_steps = 0
 
     def sync(self, name, new_stop_value, reverse):
+
+        if self.ignore_steps > 0:
+            print("SYNC IGNORED")
+            return
+
         if not new_stop_value:
             if reverse:
                 new_current_step = self.gap_steps
@@ -41,7 +46,7 @@ class StepControl:
         if self.ignore_steps > 0:
             self.ignore_steps -= 1
             return
-            
+
         self.current_step -= 1
         while self.current_step < 0:
             self.current_step += self.steps_per_rotation
@@ -72,8 +77,6 @@ class StepControl:
         next_index_fwd, fwd_dist = self.find_target_index(target_digit, self.current_digit_index, 1)
         next_index_bwd, bwd_dist = self.find_target_index(target_digit, self.current_digit_index, -1)
 
-        print("B", next_index_bwd, "F", next_index_fwd, "FD", fwd_dist, "BD", bwd_dist)
-
         next_index = next_index_fwd if fwd_dist < bwd_dist else next_index_bwd
         target_step = next_index * self.steps_per_digit
 
@@ -83,9 +86,6 @@ class StepControl:
             steps_to_move = self.steps_per_rotation + steps_to_move
         elif steps_to_move > 0 and steps_to_move > self.steps_per_rotation /2:
             steps_to_move = -(self.steps_per_rotation - steps_to_move)
-
-        # if steps_to_move < 0:
-        #     steps_to_move = self.steps_per_rotation + steps_to_move
         
         steps_to_move = int(round(steps_to_move))
         self.ignore_steps = 0

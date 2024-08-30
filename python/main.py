@@ -38,7 +38,7 @@ while True:
         num = newnum
         p2 = num % 10
         p1 = num // 10
-        print(num, p1, p2)
+        print("NEW NUM", num, p1, p2)
 
         m1.set_target_digit(p1)
         m2.set_target_digit(p2)
