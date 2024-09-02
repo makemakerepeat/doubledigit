@@ -12,7 +12,7 @@ if CLOCK_MODE == CLOCK_SHOW_HOURS:
     STEPPER_1_DIGITS = CLOCK_012_DIGITS
 STEPPER_2_DIGITS = CLOCK_0123456789_DIGITS
 
-STEP_DELAY = 0.003
+STEP_DELAY = 0.0037 # Range 0.0025 - 0.0037
 
 m1 = stepper.StepperMotor("0-2",STEPPER_1_PINS, STEPPER_1_STOP_PIN, STEPPER_1_DIGITS)
 m2 = stepper.StepperMotor("0-9",STEPPER_2_PINS, STEPPER_2_STOP_PIN, STEPPER_2_DIGITS)
@@ -29,10 +29,13 @@ def reset_pos_1by1():
 reset_pos_1by1()
 print("IN POSITION")
 
-num = 0
+num = -1
 while True:
+    # reset_pos_1by1()
+    # continue
+
     time.sleep(STEP_DELAY)
-    newnum = get_time_number_test(CLOCK_MODE)
+    newnum = get_time_number(CLOCK_MODE)
 
     if newnum != num:
         num = newnum
@@ -40,9 +43,7 @@ while True:
         p1 = num // 10
         print("NEW NUM", num, p1, p2)
 
-        m1.set_target_digit(p1)
-        m2.set_target_digit(p2)
-
-
+    m1.set_target_digit(p1)
+    m2.set_target_digit(p2)
     m1.step_to_target()    
     m2.step_to_target()

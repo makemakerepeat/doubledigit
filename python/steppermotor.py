@@ -55,8 +55,8 @@ class StepperMotor:
     def step_one(self, reverse = False):
         step = self.current_step % NUM_WIRES
         for i in range(NUM_WIRES):
-            on = (step == i or step == (i+1) % NUM_WIRES )
-            self.pins[i].value(step == i) ### NB ###
+            on = ((step == i) or step == ((i+1) % NUM_WIRES))
+            self.pins[i].value(on) ### NB ###
 
         if reverse:
             self.current_step -= 1
@@ -75,7 +75,7 @@ class StepperMotor:
     def set_target_digit(self, tgt):
 
         if self.steps_to_move != 0:
-            print("DENIED", tgt)
+#            print("DENIED", tgt)
             return
 
         self.steps_to_move = self.step_control.calculate_steps_to(tgt)
